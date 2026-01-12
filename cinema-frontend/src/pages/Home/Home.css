@@ -1,0 +1,88 @@
+.home-container {
+  padding: 40px 20px;
+  max-width: 800px;
+  margin: auto;
+  font-family: 'Arial', sans-serif;
+}
+
+.home-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 20px;
+}
+
+.home-title {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 30px;
+  color: #222;
+}
+
+/* scroll tylko tutaj */
+.screenings-list {
+  margin-top: 15px;
+  overflow-y: auto;
+  flex: 1;
+  overflow-x: hidden;
+  /* żeby footer NIE był wypychany */
+  max-height: calc(100vh - 220px);
+}
+
+.screening-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  width: 40vw;
+  
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.screening-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.screening-title {
+  font-size: 1.4rem;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.screening-category {
+  font-weight: bold;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+.screening-description {
+  color: #666;
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+}
+
+.screening-time,
+.screening-hall {
+  margin: 3px 0;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.reserve-button {
+  margin-top: 15px;
+  padding: 10px 15px;
+  background-color: #28a745;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.reserve-button:hover {
+  background-color: #218838;
+}

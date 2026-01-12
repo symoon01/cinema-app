@@ -1,0 +1,38 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: cinema_db
+      TZ: Europe/Warsaw
+    ports:
+      - "54321:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./db:/docker-entrypoint-initdb.d
+
+  backend:
+    build: ./cinema-backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./cinema-backend/.env
+    environment:
+      - TZ=Europe/Warsaw
+      - FRONTEND_URL=http://localhost:3000
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/cinema_db
+
+  frontend:
+    build:
+      context: ./cinema-frontend
+      args:
+        - REACT_APP_API_URL=http://localhost:5000
+    ports:
+      - "3000:80"
+    environment:
+      - TZ=Europe/Warsaw
+
+volumes:
+  db_data:

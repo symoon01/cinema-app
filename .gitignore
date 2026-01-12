@@ -1,0 +1,11 @@
+# Foldery zależności
+cinema-backend/node_modules/
+cinema-frontend/node_modules/
+
+# Pliki środowiskowe
+cinema-backend/.env
+cinema-frontend/.env
+
+# Wyniki budowania
+cinema-frontend/build/
+cinema-frontend/dist/
