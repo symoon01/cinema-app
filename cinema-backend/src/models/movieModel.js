@@ -79,7 +79,7 @@ async function getMovieById(id) {
  */
 async function check_if_movie_is_in_active_screenings(movieId) {
   const res = await pool.query(
-    "SELECT * FROM screenings WHERE movie_id=$1 AND screening_time > now()",
+    "SELECT * FROM screenings WHERE movie_id=$1 AND screening_time > (now() AT TIME ZONE 'Europe/Warsaw')",
     [movieId]
   );
   return res.rows.length > 0;

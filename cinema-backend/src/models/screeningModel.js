@@ -54,7 +54,7 @@ async function getAllActiveScreenings() {
     SELECT s.id, m.title, m.description, m.category, s.screening_time, s.hall_number
     FROM screenings s
     JOIN movies m ON s.movie_id = m.id
-    WHERE s.screening_time > NOW()
+    WHERE s.screening_time > (now() AT TIME ZONE 'Europe/Warsaw')
     ORDER BY s.screening_time
   `);
   return res.rows;
@@ -69,7 +69,7 @@ async function check_if_screening_is_active(screeningId) {
   const res = await pool.query(`
     SELECT s.id
     FROM screenings s
-    WHERE s.screening_time > NOW() AND s.id=$1
+    WHERE s.screening_time > (now() AT TIME ZONE 'Europe/Warsaw') AND s.id=$1
   `, [screeningId]);
   return res.rows.length > 0;
 }
