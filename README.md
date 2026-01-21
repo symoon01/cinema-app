@@ -37,13 +37,20 @@ CinemaApp to aplikacja webowa umożliwiająca użytkownikom przeglądanie repert
     cd cinema-app
     ```
 
-2.  **Uruchom aplikację za pomocą Docker Compose**
+2.  **Skonfiguruj zmienne środowiskowe** - Utwórz plik .env w katalogu cinema-backend/
+    <br>przykładowa zawartość:
+    ```bash
+    PORT=5000
+    JWT_SECRET=klucz_prywatny
+    ```
+
+3.  **Uruchom aplikację za pomocą Docker Compose**
     ```bash
     docker-compose up --build
     ```
     *Komenda ta automatycznie zbuduje obrazy, skonfiguruje bazę danych i uruchomi wszystkie usługi.*
 
-3.  **Dostęp do aplikacji**
+4.  **Dostęp do aplikacji**
     * **Frontend:** [http://localhost:3000](http://localhost:3000)
     * **Backend API:** [http://localhost:5000](http://localhost:5000)
 
