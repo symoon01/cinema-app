@@ -1,13 +1,11 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext";
 import './Home.css';
 import { toast } from 'react-toastify';
 
 export default function Home() {
   const [screenings, setScreenings] = useState([]); // przechowywanie listy aktywnych seansów
   const navigate = useNavigate(); // umożliwia nawigację do strony seansu
-  const { user } = useContext(AuthContext); // pobranie danych zalogowanego użytkownika (jeśli istnieje)
 
   // pobranie aktywnych seansów przy pierwszym renderze lub zmianie tokena użytkownika
   useEffect(() => {
@@ -26,7 +24,7 @@ export default function Home() {
     };
 
     fetchScreenings(); // wywołanie funkcji pobierającej seanse
-  }, [user?.token]);
+  }, []);
 
   return (
     <div className="home-container">

@@ -1,14 +1,14 @@
-import { useEffect, useState, useContext } from "react";
-import { AuthContext } from "../../context/AuthContext";
+import { useEffect, useState } from "react";
 import { toast } from 'react-toastify';
 import MovieModal from "./MovieModal";
 import ScreeningModal from "./ScreeningModal";
 import MovieColumn from "./MovieColumn";
 import ScreeningColumn from "./ScreeningColumn";
 import './AdminPanel.css';
+import { useAuth } from "@clerk/clerk-react";
 
 export default function AdminPanel() {
-  const { user } = useContext(AuthContext); // pobranie danych użytkownika z kontekstu
+  const {isLoaded, isSignedIn, getToken } = useAuth();
   const [movies, setMovies] = useState([]); // lista filmów
   const [screenings, setScreenings] = useState([]); // lista seansów
 
@@ -28,21 +28,26 @@ export default function AdminPanel() {
   const [screeningFilter, setScreeningFilter] = useState("");
   const [screeningSort, setScreeningSort] = useState("time-desc");
 
-  const authHeader = { Authorization: `Bearer ${user.token}`, "Content-Type": "application/json" };
-
   // Pobranie filmów i seansów po załadowaniu użytkownika
-  useEffect(() => { 
-    if (user?.token) { 
-      fetchMovies(); 
-      fetchScreenings(); 
-    } 
-  }, [user?.token]);
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn) return;
+    const load = async () => {
+      await fetchMovies();
+      await fetchScreenings();
+    };
+    load();
+  }, [isLoaded, isSignedIn]);
 
   // Pobranie listy filmów
   const fetchMovies = async () => {
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/movies`, { headers: authHeader });
-      setMovies(await res.json());
+      const token = await getToken();
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/movies`, { headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }});
+      const data = await res.json();
+      setMovies(data);
     } catch (err) {
       console.error(err); 
       toast.error("Błąd ładowania filmów");
@@ -52,7 +57,11 @@ export default function AdminPanel() {
   // Pobranie listy seansów
   const fetchScreenings = async () => {
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/screenings`, { headers: authHeader });
+      const token = await getToken();
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/screenings`, { headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }});
       setScreenings(await res.json());
     } catch (err) { 
       console.error(err); 
@@ -76,9 +85,13 @@ export default function AdminPanel() {
       ? `${process.env.REACT_APP_API_URL}/api/admin/movies/${editingMovie.id}` 
       : `${process.env.REACT_APP_API_URL}/api/admin/movies`;
 
+    const token = await getToken();
     const res = await fetch(url, { 
       method: isEdit ? "PUT" : "POST", 
-      headers: authHeader, 
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }, 
       body: JSON.stringify(data) 
     });
 
@@ -95,7 +108,11 @@ export default function AdminPanel() {
   // Funkcja usuwająca film
   const deleteMovie = async (id) => {
     if (!window.confirm("Usunąć film? Usunie też seanse")) return;
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/movies/${id}`, { method: "DELETE", headers: authHeader });
+    const token = await getToken();
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/movies/${id}`, { method: "DELETE", headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }});
     if (res.ok) { 
       toast.success("Film usunięty pomyślnie"); 
       fetchMovies(); 
@@ -115,7 +132,12 @@ export default function AdminPanel() {
     if (screeningDate <= new Date()) return toast.error("Seans musi być w przyszłości");
 
     const payload = { ...screeningForm, movie_id: Number(screeningForm.movie_id), hall_number: hallNumber };
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/screenings`, { method: "POST", headers: authHeader, body: JSON.stringify(payload) });
+    const token = await getToken();
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/screenings`, { method: "POST", headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }, 
+      body: JSON.stringify(payload) });
     const data = await res.json();
     if (res.ok) { 
       toast.success("Dodano seans"); 
@@ -136,7 +158,12 @@ export default function AdminPanel() {
     if (isNaN(screeningDate.getTime())) return toast.error("Nieprawidłowa data seansu");
     
     const payload = { ...editingScreening, movie_id: Number(editingScreening.movie_id), hall_number: hallNumber };
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/screenings/${editingScreening.id}`, { method: "PUT", headers: authHeader, body: JSON.stringify(payload) });
+    const token = await getToken();
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/screenings/${editingScreening.id}`, { method: "PUT", headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload) });
     const data = await res.json();
     if (res.ok) { 
       toast.success("Seans zaktualizowany pomyślnie"); 
@@ -148,7 +175,11 @@ export default function AdminPanel() {
   // Usuwanie seansu
   const deleteScreening = async (id) => {
     if (!window.confirm("Usunąć seans?")) return;
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/screenings/${id}`, { method: "DELETE", headers: authHeader });
+    const token = await getToken();
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/screenings/${id}`, { method: "DELETE", headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }});
     if(res.ok) toast.success("Seans usunięty pomyślnie");
     else toast.error((await res.json()).error || "Błąd usuwania seansu");
     fetchScreenings();

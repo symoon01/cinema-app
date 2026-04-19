@@ -1,27 +1,31 @@
-import { useEffect, useState, useContext } from "react";
-import { AuthContext } from "../../context/AuthContext";
+import { useEffect, useState } from "react";
 import './MyReservations.css';
 import { toast } from 'react-toastify';
+import { useUser, useClerk, useAuth  } from "@clerk/clerk-react";
 
 export default function MyReservations() {
-  const { user, logout } = useContext(AuthContext); // pobranie tokena użytkownika i funkcji wylogowania z kontekstu
+  const { isSignedIn } = useUser();
+  const { signOut } = useClerk();
+  const { getToken } = useAuth();
+
   const [reservations, setReservations] = useState([]); // przechowywanie listy rezerwacji
 
   // pobranie rezerwacji użytkownika po załadowaniu komponentu lub zmianie tokena
   useEffect(() => {
-    if (!user?.token) return; // brak tokena -> brak akcji
+    if (!isSignedIn) return; // brak tokena -> brak akcji
 
     const fetchReservations = async () => {
       try {
+        const token = await getToken();
         const res = await fetch(`${process.env.REACT_APP_API_URL}/api/reservations/my`, {
-          headers: { 'Authorization': `Bearer ${user.token}` }, // uwierzytelnienie tokenem
+          headers: { 'Authorization': `Bearer ${token || ""}` } // uwierzytelnienie tokenem
         });
 
         if (res.ok) {
           const data = await res.json(); // odczyt danych z odpowiedzi
           setReservations(data); // zapisanie rezerwacji w stanie
         } else if (res.status === 401) {
-          logout(); // token wygasł -> wylogowanie
+          await signOut(); // token wygasł -> wylogowanie
         } else {
           console.error("Błąd pobierania rezerwacji:", res.status); // logowanie innych błędów
         }
@@ -31,15 +35,16 @@ export default function MyReservations() {
     };
 
     fetchReservations(); // wywołanie funkcji pobierania
-  }, [user?.token, logout]);
+  }, [isSignedIn, getToken, signOut]); // zależności: isSignedIn, getToken, signOut
 
   // obsługa anulowania rezerwacji
   const handleCancel = async (id) => {
+    const token = await getToken();
     if (!window.confirm("Na pewno anulować rezerwację?")) return; // potwierdzenie akcji
 
     const res = await fetch(`${process.env.REACT_APP_API_URL}/api/reservations/${id}`, {
       method: "DELETE",
-      headers: { Authorization: `Bearer ${user.token}` }, // uwierzytelnienie tokenem
+      headers: { 'Authorization': `Bearer ${token || ""}` } // uwierzytelnienie tokenem
     });
 
     const data = await res.json();

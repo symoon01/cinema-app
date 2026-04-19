@@ -12,13 +12,5 @@ const userController = require('../controllers/userController');
 // Endpoint chroniony middlewarem autoryzacyjnym
 router.get('/me', authMiddleware, userController.getProfile);
 
-// Zmiana hasła zalogowanego użytkownika
-// Endpoint chroniony middlewarem autoryzacyjnym
-router.put('/password', authMiddleware, userController.changePassword);
-
-// Dezaktywacja konta użytkownika
-// Endpoint chroniony middlewarem autoryzacyjnym
-router.delete('/', authMiddleware, userController.deactivateAccount);
-
 // Eksport routera do podłączenia w aplikacji głównej
 module.exports = router;

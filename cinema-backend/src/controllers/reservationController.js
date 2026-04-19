@@ -1,20 +1,25 @@
 const reservationModel = require('../models/reservationModel');
 const screeningModel = require('../models/screeningModel');
 const seatModel = require('../models/seatModel');
-const userModel = require('../models/userModel');
+const { getAuth } = require("@clerk/express");
 
 /**
  * Rezerwacja miejsca na seansie
  */
 async function reserveSeat(req, res) {
   try {
+    
     const { screeningId, seatId } = req.body;
     // Walidacja danych wejściowych
     if (!screeningId || !seatId) {
       return res.status(400).json({ error: "screeningId i seatId są wymagane" });
     }
 
-    const userId = req.user.id; // ustawione w authMiddleware
+    const { userId } = getAuth(req);
+
+    if (!userId) {
+      return res.status(401).json({ error: "Brak autoryzacji" });
+    }
 
     // Sprawdzenie czy seans istnieje i jest aktywny
     const active = await screeningModel.check_if_screening_is_active(screeningId);
@@ -43,12 +48,8 @@ async function reserveSeat(req, res) {
  */
 async function getMyReservations(req, res) {
   try {
-    const userId = req.user.id; // ustawione przez authMiddleware
+    const { userId } = getAuth(req);
     if (!userId) return res.status(401).json({ error: "Niepoprawny użytkownik" });
-
-    // Sprawdzenie czy użytkownik istnieje
-    const user = await userModel.findUserById(userId);
-    if (!user) return res.status(404).json({ error: "Użytkownik nie istnieje" });
 
     // Pobranie rezerwacji
     const reservations = await reservationModel.getReservationsByUser(userId);
@@ -65,12 +66,8 @@ async function getMyReservations(req, res) {
  */
 async function cancelReservation(req, res) {
   try {
-    const userId = req.user.id; // ustawione przez authMiddleware
+    const { userId } = getAuth(req);
     if (!userId) return res.status(401).json({ error: "Niepoprawny użytkownik" });
-
-    // Sprawdzenie czy użytkownik istnieje
-    const user = await userModel.findUserById(userId);
-    if (!user) return res.status(404).json({ error: "Użytkownik nie istnieje" });
 
     const { reservationId } = req.params;
     if (!reservationId) return res.status(400).json({ error: "Brak ID rezerwacji" });

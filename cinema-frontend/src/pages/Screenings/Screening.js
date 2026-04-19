@@ -1,12 +1,14 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext";
 import './Screening.css'; // import stylów dla komponentu
 import { toast } from 'react-toastify';
+import { useAuth } from "@clerk/clerk-react";
 
 export default function Screening() {
   const { id } = useParams(); // pobranie ID seansu z URL
-  const { user } = useContext(AuthContext); // pobranie tokenu i danych użytkownika
+  const { getToken } = useAuth();
+
+
   const [seats, setSeats] = useState([]); // lista miejsc w sali
   const [movieInfo, setMovieInfo] = useState(null); // informacje o filmie
   const [screeningTime, setScreeningTime] = useState(null); // data i godzina seansu
@@ -15,8 +17,9 @@ export default function Screening() {
   // pobranie miejsc z serwera
   const fetchSeats = async () => {
     try {
+      const token = await getToken();
       const res = await fetch(`${process.env.REACT_APP_API_URL}/api/seats/${id}`, {
-        headers: { 'Authorization': `Bearer ${user.token}` }
+        headers: { 'Authorization': `Bearer ${token || ""}` }
       });
       const data = await res.json();
       if (res.ok) setSeats(Array.isArray(data) ? data : []); // zapisanie miejsc
@@ -30,8 +33,9 @@ export default function Screening() {
   // pobranie informacji o filmie z serwera
   const fetchMovie = async () => {
     try {
+      const token = await getToken();
       const res = await fetch(`${process.env.REACT_APP_API_URL}/api/screenings/${id}`, {
-        headers: { 'Authorization': `Bearer ${user.token}` }
+        headers: { 'Authorization': `Bearer ${token || ""}` }
       });
       const data = await res.json();
       if (res.ok) {
@@ -60,6 +64,7 @@ export default function Screening() {
 
   // rezerwacja miejsca
   const handleReserve = async (seatId) => {
+    const token = await getToken();
     const seat = seats.find(s => s.seat_id == seatId);
     //potwierdzenie rezerwacji
     if (!window.confirm(`Na pewno chcesz zarezerwować miejsce ${seat.seat_number} w rzędzie ${seat.row_number} ?`)) return;
@@ -68,7 +73,7 @@ export default function Screening() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.token}`
+          'Authorization': `Bearer ${token || ""}`
         },
         body: JSON.stringify({ screeningId: id, seatId })
       });
